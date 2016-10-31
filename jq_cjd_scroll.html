@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>jquery版新闻无缝滚动</title>
+	<style>
+		#list{
+			height:200px;
+			overflow: hidden;
+			border:1px solid #c0f;
+		}
+		.list{
+			margin-top:-40px;
+			/*
+			transition: margin 1s ease-in-out 0.2s;
+			*/
+		}
+		.list li{
+			line-height: 30px;
+		}
+	</style>
+</head>
+<body>
+	<div id="list">
+	<ul class="list">
+		<li>这是测试1</li>
+		<li>这是测试2</li>
+		<li>这是测试3</li>
+		<li>这是测试4</li>
+		<li>这是测试5</li>
+		<li>这是测试6</li>
+		<li>这是测试7</li>
+		<li>这是测试8</li>
+		<li>这是测试9</li>
+		<li>这是测试10</li>
+		<li>这是测试11</li>
+		<li>这是测试12</li>
+		<li>这是测试13</li>
+		<li>这是测试14</li>
+		<li>这是测试15</li>
+		<li>这是测试16</li>
+		<li>这是测试17</li>
+		<li>这是测试18</li>
+		<li>这是测试19</li>
+		<li>这是测试20</li>
+	</ul>
+	</div>
+
+
+	<script src="http://libs.cdnjs.net/jquery/3.1.1/jquery.min.js"></script>
+	<script>
+		;(function($,window){
+			var cjd_scroll = function(ele,options){
+				this.$dom = ele;
+				this.defaults = {
+					speed:50,	//滚动速度
+					type:'seam',		//滚动类型multi,one,seam,group
+					animate:'marginTop'
+				}
+				this.options = $.extend({},this.defaults,options);
+			}
+			cjd_scroll.prototype = {
+				init:function(){
+					var self = this;
+					this.$boxHeight = this.$dom.height();
+					return this.$dom.each(function(){
+						self.roll();
+						self.bind();
+					})
+				},
+				roll:function(){
+					var self = this;
+					var cloneDom = this.$dom.html();
+					this.$dom.append(cloneDom);
+					self.animate(this.speed);
+				},
+				bind:function(){
+					var self = this;
+					this.$dom.bind('mousemove',function(){
+						clearInterval(self.animation);
+					});
+					this.$dom.bind('mouseout',function(){
+						self.animate();
+					});
+				},
+				animate:function(){
+					var self = this;
+					this.animation = setInterval(function(){
+						//this.pause=false;
+						if(self.curPos<self.$boxHeight){
+							self.curPos++;
+							self.animateStyle(self.curPos);
+						}else{
+							self.curPos=0;
+						}
+					},self.options.speed);
+				},
+				animateStyle:function(curPos){
+					var self = this;
+					var group = self.options.type.split(':');
+					if(group.length>1 && !isNaN(group[1]) && group[0] === 'group'){
+						self.$dom.animate({'marginTop':-self.$dom.find('li').height()*group[1]*Math.ceil(curPos/(self.$dom.find('li').height()*group[1]))},self.options.speed);
+					}
+					switch(self.options.type){
+						case 'one':
+							self.$dom.parent().height(self.$dom.find('li').height());
+							self.$dom.animate({'marginTop':-self.$dom.find('li').height()*Math.ceil(curPos/self.$dom.find('li').height())},self.options.speed);
+							break;
+						case 'multi':
+							break;
+						case 'seam':
+							self.$dom.animate({'marginTop':-curPos},self.options.speed);
+							break;
+					}
+				},
+			}
+			$.fn.cjdScroll = function(options){
+				var cjd = new cjd_scroll(this,options);
+				return cjd.init();
+			}
+		}(jQuery,window));
+		$(function(){
+			$('.list').cjdScroll({
+				speed:80,
+				type:'one'
+			});
+		});
+	</script>
+</body>
+</html>
